@@ -273,3 +273,80 @@ networks:
 
 After that I went through the docker swarm setup. All the swarm related documentation is in seperate [repo](https://github.com/waglay/SetupDockerSwarm).
 
+### Fifth Day
+- I went through the services in docker swarm.
+- I also looked through the nodes in depth, learnt about quorum and multi-managers 
+- The services can be declarative and imperative.
+  Imperative approach can be as easy as:
+```
+docker service create --replicas 3 --name web_service -p 80:80 nginx 
+```
+The services can be updated easily using docker service update command.
+The service can also be scaled up or down using:
+```
+docker service scale nginx=2
+```
+The services are created which can be seen using:
+```
+docker service ls
+```
+And a specific service can be monitored or seen using:
+```
+docker service ps <service name>
+```
+And several other docker commands like inspect can be used to inspect each and every service and tasks under them, which is basically the processes that service have created in the worker nodes.
+- In production and normally we can use declarative approach which is a docker-compose.yml file.
+In this approach we will be writing a docker-compose file and use command:
+```
+docker stack deploy -c docker-compose.yml <stack_name>
+```
+And for any updates, scale up or down, image change, etc simply the change in docker-compose file followed by the above command will make the changes. 
+- We can also scale up the containers in a service, rollback the updates and monitor the conatiner lifecycle.
+As I have already mentioned, scalling up down and updates are really easy using docker-compose file and a stack. Also there imperative commands as well to do all this to a service.
+Sample docker-compose.yml file with all the metrics defined:
+```
+version: '3.8'
+services:
+  web:
+    image: nginx:latest
+    ports:
+      - 80:80
+    deploy:
+      mode: replicated
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 2m
+      update_config:
+        parallelism: 1
+        delay: 5s
+        failure_action: rollback
+        monitor: 15s
+        max_failure_ratio: 0.4
+      rollback_config:
+        parallelism: 1
+        delay: 5s
+        failure_action: pause
+        monitor: 15s
+        max_failure_ratio: 0.4
+  healthcheck:
+    test: ls
+    interval: 10s
+    timeout: 10s
+    retries: 3
+    start_period: 30s
+  db:
+    image: mysql
+    deploy:
+      mode: replicated
+      replicas: 3
+    env-file:
+      - .env
+```
+ 
+### Sixth Day
+- On this day, I delved into the details of healthchecks, rollback_config, update_config, restrat_policies and resource allocation. These are the key factors contributing and ensuring a healthy and available container.  
+- After that I struggled to build a multi-platform docker image as I was not configuring them well but finally I did manage to make multi-platform docker image with the help of docker [docs](https://docs.docker.com/build/building/multi-platform/).
+**Note:** I took a lot of help form [YouTube](https://www.youtube.com/watch?v=YYfefejSgWY) for learning the concepts in docker swarm. 

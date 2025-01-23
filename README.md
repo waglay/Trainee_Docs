@@ -118,6 +118,8 @@ EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
 ```
 - This is the most optimized I got the images to be. Sorry for the naming, I just ramdomly put name here and there.
+ <img width="533" alt="Screen Shot 2025-01-23 at 11 46 29 AM" src="https://github.com/user-attachments/assets/6607c38e-18bb-49c3-bde8-960e4a9f48a6" />
+
 - During the process I came across destroless images as well, and build basic optimization techniques as there are serveral arrays of approach.
 
 ### Third Day

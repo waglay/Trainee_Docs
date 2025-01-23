@@ -22,6 +22,9 @@ docker build -t frontend .
  
 #build context of a remote repo
 docker build https://github.com/user/myrepo.git
+
+#empty build context is used when there is no dependency on the localfile like:
+docker build - < Dockerfile
 ```
 
 - What is the point of learning Docker without the docker image. I went through all the commands used to build a image layers.

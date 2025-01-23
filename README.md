@@ -78,6 +78,7 @@ RUN --mount=type=secret,id=name cp /run/secrets/name /tmp
 RUN echo $NAME
 ```
 - Result:
+<img width="1310" alt="Screen Shot 2025-01-23 at 11 00 25 AM" src="https://github.com/user-attachments/assets/a02f675e-110d-49b8-88a1-f07f09181c0f" />
 
 
 - Similar approach with ssh secrets, one usecase will be to access the private repo from the container. For instance:

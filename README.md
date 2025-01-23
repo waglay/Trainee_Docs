@@ -11,7 +11,7 @@ I went through the documentaion of [Docker](https://docs.docker.com). Below are 
 ```
 docker build -f (path to the dockerfile e.g /web/frontend.Dockerfile) -t frontend .
 ```
-- I also came across build context of the Dockerfile. It can be from a directory on the host machine which containes the Dockerfile or from remote repository like GitHub or any tar file in host machine or in any remote location.
+- I also came across build context of the Dockerfile. It can be from a directory on the host machine which contains the Dockerfile or from remote repository like GitHub or any tar file in host machine or in any remote location.
 ```
 docker build -t frontend .
 #here . is the build context
@@ -94,3 +94,180 @@ RUN echo $NAME
 docker buildx build --ssh default .
 ```
 - The third Git approach is similar, we have to pass the env valiables prior to the build in build command itself. I have not tried it yet as the above ways might be enough. If I will need reference I can always get back to the official docker docs.
+
+### Second Day
+Tasks :
+- Throughout the day my main focus was to work on Docker image size optimization. 
+- I started the day pulling sample react applications. 
+- I first build the Docker image without optimization processes. 
+- After that I utilized the .dockerignore file to test how much of a size difference it makes.
+- Furthermore, I seeked the most optimized docker base images.
+- I tried the docker multi-stage build which finally reduced the size of the image. It was still big but I got the gist of it.
+Below is the most optimized way I could build a react app, first I build the artifact and launched the artifact in nginx base image, this approach is safe and optimal for react app as per my findings.
+```
+FROM node:18-alpine AS build
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm install --frozen-lockfile
+COPY . ./
+RUN npm run build
+
+FROM nginx:alpine AS production
+COPY --from=build /app/build /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+```
+- This is the most optimized I got the images to be. Sorry for the naming, I just ramdomly put name here and there.
+- During the process I came across destroless images as well, and build basic optimization techniques as there are serveral arrays of approach.
+
+### Third Day
+Tasks :
+I went and explored the volumes and networking in docker. Also I went through Docker Compose.
+
+- For volumes there are three types of mounts available, bind mounts and volume mounts are mostly used.
+- Bind mounts are basically mounting a directory in the host machine to the container directory which remains persistent and changes are tracked effectively. We do not need to define them seperately. For instance:
+
+```
+docker run --name nginx -d --mount type=bind,src=/nginx.conf,dst=/etc/nginx/nginx.conf -p 80:80 nginx
+```
+- But for docker volumes , we need to create the volume in docker using:
+```
+docker volume create <volume_name>
+```
+- After the volume is created it can be mounted to the container as bind mount
+```
+docker run --name nginx -d --mount type=volume,src=<volume_name>,dst=/var/log/nginx -p 80:80 nginx
+```
+
+- **Networking**
+---
+We can manage the ip filtering and integration of docker networking with system firewalls like ufw and firewalld. This is really interesting but I have not tried it yet.
+
+There are six types of networking drivers in docker :
+
+- Host
+- Bridge
+- Overlay
+- Ipvlan
+- Macvlan
+- none
+
+Host: 
+This networking helps to assign the ipaddress of the host to the container itself with no intermediates in between. This networking is considered as the most unsecure with obvious reasons.
+It can be used as:
+```
+docker run -d --network host --name my_nginx nginx
+```
+Bridge:
+I do not have the proper explaination but this will allow the containers to be isolated from each other in different networks rather than using the default bridge network.
+First we need to create the network and attach it to the container.
+```
+docker network create -d bridge mysql_net
+```
+And it can be attached to the container using:
+```
+docker run -d --network mysql_net --name my_nginx nginx
+```
+
+Overlay:
+It is based on a networking concept of underlay and overlay. This basically helps to connect two hosts with docker deamon and run containers on them. Docker Swarm have adapted this network. In order to use the network we must initialize the swarm mode and pass --attachable for containers to use it not only swarm.
+
+Again the creation method is the same:
+```
+docker network create -d overlay --attachable mysql_net
+```
+And the same command to attach them
+```
+docker run -d --network mysql_net --name my_nginx nginx
+```
+Ipvlan:
+This network type helps to assign the host's ip supnet without the use of a bridge to create a faster networks.
+In order to use it the ipaddress of the host must be known to assign the network and the first ip of the subnet is used as default gateway. Also the port which is providing the network should also be provided. For instance: in mac if I type ifconfig in my terminal, I can access my ipaddress in en0.
+
+It can be created by using:
+```
+docker network create -d ipvlan --subnet=192.168.22.0/24 --gateway=192.168.22.1 -o ipvlan_mode=l2 -o parent=en0 mysql_net 
+```
+And it can be attached in the same way:
+```
+docker run -d --network mysql_net --name my_nginx nginx
+```
+Macvlan:
+It is exactly same as ipvlan but the containers are assigned with their own macaddress.
+It can be created by using:
+```
+docker network create -d macvlan --subnet=192.168.22.0/24 --gateway=192.168.22.1 -o parent=en0 mysql_net 
+```
+And it can be attached in the same way:
+```
+docker run -d --network mysql_net --name my_nginx nginx
+```
+
+none:
+This will totally isolate the container from any connection what so ever.
+```
+docker run -d --network none --name my_nginx nginx
+```
+I got all the insides from [YouTube](https://www.youtube.com/watch?v=fBRgw5dyBd4) as it is easier to understand.
+
+- Docker Compose
+I also went through Docker Compose file and as it is a yml file, knowing most of the services beforehand made it intuitive. References from the documentations will make it easier.
+
+### Break
+I set up the drone server while I was home. I will not cover the docs here. It will be on seperate [repo](https://github.com/waglay/SetupDroneCi) , after I come to that part the repo will be populated. 
+
+### Fourth Day
+ On this day I was determined to setup my own final year project from college. I tried to optimize it to the fullest and used docker-compose to build the images. I created two containers, my app and mysql container. Below are the files:  
+
+- Dockerfile
+```
+FROM ubuntu AS build
+WORKDIR /app
+RUN apt update && apt install openjdk-17-jre-headless maven -y
+COPY . .
+RUN mvn clean install -DskipTests
+
+FROM openjdk:17-alpine
+WORKDIR /app
+COPY --from=build /app/target/FYP-0.0.1-SNAPSHOT.jar /app/app.jar
+ENTRYPOINT ["java","-jar","/app/app.jar"]
+```
+- .env
+```
+MYSQL_ROOT_PASSWORD=shishir
+MYSQL_DATABASE=fyp
+```
+
+- .dockerignore
+```
+.gitignore
+.dockerignore
+Dockerfile
+```
+- docker-compose.yml
+```
+version: '3.8'
+services:
+  db:
+    image: mysql
+    container_name: mysql
+    restart: always
+    networks:
+      - javaapp
+    env_file:
+      - .env
+  web:
+    build: .
+    container_name: app
+    ports:
+      - 8080:8081
+    networks:
+      - javaapp
+    depends_on:
+      - db
+networks:
+  javaapp:
+```
+
+After that I went through the docker swarm setup. All the swarm related documentation is in seperate [repo](https://github.com/waglay/SetupDockerSwarm).
+

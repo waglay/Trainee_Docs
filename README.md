@@ -5,7 +5,7 @@
 First Task :
 My first task was to set up docker in my host computer, which is a 2014 macbook pro with macOS Big Sur Version 11.7.10 so, installing latest version of Docker was impossible. I have already documented the setup process in my git [repo](https://github.com/waglay/InstallOlderDockerInOldMac). 
 
-Second Task:
+Second Task :
 I went through the documentaion of [Docker](https://docs.docker.com). Below are the highlights of my learnings:
 - I was unaware that we could assign custom Dockerfile in any context as long as we have .Dockerfile as an extension : for example frontend.Dockerfile which can be easily executed using: 
 ```
@@ -56,3 +56,40 @@ docker build -t arg --build-arg NAME=shishir -f Desktop/TestingDocker/Args.Docke
 ```
 - Successful use of args and env using the above command.
 <img width="569" alt="Screen Shot 2025-01-23 at 10 11 05 AM" src="https://github.com/user-attachments/assets/7238dfaf-681a-4bde-98b1-899fe15807c8" />
+
+Third Task :
+This is all about the secrets in Docker. It allows three types of secret, one is secret itself, ssh secret and Git authentication for remote contexts.
+
+- In order to access any secret from the local machine to the Dockerfile, we need to build using:
+```
+docker build --secret id=name,src=secret.txt/env=<any environment variable in host> -t frontend .
+```
+- And in order for it to work, we need to include the following command in the Dockerfile
+```
+RUN --mount=type=secret,id=name cp /run/secrets/name /tmp
+```
+- For instance
+
+```
+FROM ubuntu
+ARG NAME
+ENV NAME=$NAME
+RUN --mount=type=secret,id=name cp /run/secrets/name /tmp
+RUN echo $NAME
+```
+- Result:
+
+
+- Similar approach with ssh secrets, one usecase will be to access the private repo from the container. For instance:
+```
+FROM ubuntu
+ARG NAME
+ENV NAME=$NAME
+ADD git@github.com:waglay/Jenkins.git /tmp
+RUN echo $NAME
+```
+- And executing:
+```
+docker buildx build --ssh default .
+```
+- The third Git approach is similar, we have to pass the env valiables prior to the build in build command itself. I have not tried it yet as the above ways might be enough. If I will need reference I can always get back to the official docker docs.

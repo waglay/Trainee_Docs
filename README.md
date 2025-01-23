@@ -216,7 +216,8 @@ docker run -d --network none --name my_nginx nginx
 I got all the insides from [YouTube](https://www.youtube.com/watch?v=fBRgw5dyBd4) as it is easier to understand.
 
 - Docker Compose
-I also went through Docker Compose file and as it is a yml file, knowing most of the services beforehand made it intuitive. References from the documentations will make it easier.
+
+I also went through Docker Compose file and as it is a yml file, knowing most of the services beforehand made it intuitive. References from the documentations makes it even easier.
 
 ### Break
 I set up the drone server while I was home. I will not cover the docs here. It will be on seperate [repo](https://github.com/waglay/SetupDroneCi) , after I come to that part the repo will be populated. 

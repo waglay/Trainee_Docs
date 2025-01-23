@@ -36,7 +36,7 @@ RUN echo $NAME
 docker build --build-arg NAME=shishir .
 ```
 - Successfully passed the arg inside the Dockerfile now it can be used accordingly.
-
+<img width="1032" alt="Screen Shot 2025-01-23 at 9 59 37 AM" src="https://github.com/user-attachments/assets/b8c95e7d-3d5e-4a68-8cc2-cf5af5b2bfa0" />
 
 - Best example for env is while running the mysql conatiner, environment variable is passed to set up the environment in the container. 
 ```
@@ -55,3 +55,4 @@ RUN echo $NAME
 docker build -t arg --build-arg NAME=shishir -f Desktop/TestingDocker/Args.Dockerfile Desktop/TestingDocker
 ```
 - Successful use of args and env using the above command.
+<img width="569" alt="Screen Shot 2025-01-23 at 10 11 05 AM" src="https://github.com/user-attachments/assets/7238dfaf-681a-4bde-98b1-899fe15807c8" />

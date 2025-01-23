@@ -331,12 +331,12 @@ services:
         failure_action: pause
         monitor: 15s
         max_failure_ratio: 0.4
-  healthcheck:
-    test: ls
-    interval: 10s
-    timeout: 10s
-    retries: 3
-    start_period: 30s
+    healthcheck:
+      test: ls
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
   db:
     image: mysql
     deploy:

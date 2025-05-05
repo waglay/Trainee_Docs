@@ -329,12 +329,14 @@ services:
         failure_action: rollback
         monitor: 15s
         max_failure_ratio: 0.4
+        order: start-first
       rollback_config:
         parallelism: 1
         delay: 5s
         failure_action: pause
         monitor: 15s
         max_failure_ratio: 0.4
+        order: start-first
     healthcheck:
       test: ls
       interval: 10s
